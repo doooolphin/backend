@@ -1,0 +1,7 @@
+server:
+  port: 23213
+
+spring:
+  config:
+    activate:
+      on-profile: dev
