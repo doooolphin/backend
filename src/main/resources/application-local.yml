@@ -5,3 +5,8 @@ spring:
   config:
     activate:
       on-profile: local
+
+# Disabling the /v3/api-docs endpoint
+springdoc:
+  api-docs:
+    enabled: false
