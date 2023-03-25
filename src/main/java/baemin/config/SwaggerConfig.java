@@ -1,4 +1,4 @@
-package baemin;
+package baemin.config;
 
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springdoc.core.properties.SwaggerUiConfigProperties;
@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 @Component
-public class SwaggerUIConfig {
+public class SwaggerConfig {
 
     @Bean
     public SwaggerUiConfigProperties swaggerUiConfig() {
