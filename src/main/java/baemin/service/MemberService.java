@@ -4,6 +4,7 @@ import baemin.entity.Member;
 import baemin.repository.MemberRepository;
 import baemin.vo.MemberVo;
 import jakarta.transaction.Transactional;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,5 +30,16 @@ public class MemberService {
 
         return true;
     }
+
+    public MemberVo findById(Integer id) {
+        MemberVo memberVo = new MemberVo();
+
+        Member member = memberRepository.findById(id).orElseThrow();
+        memberVo.setId(member.getId());
+        memberVo.setName(member.getName());
+
+        return memberVo;
+    }
+
 
 }
