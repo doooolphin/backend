@@ -1,4 +1,4 @@
-package baemin;
+package baemin.config;
 
 import com.zaxxer.hikari.HikariDataSource;
 import javax.sql.DataSource;
