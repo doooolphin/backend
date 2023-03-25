@@ -31,8 +31,7 @@ spring:
         format_sql : true
         use_sql_comments : true
 
-# Disabling the /v3/api-docs endpoint
 springdoc:
-  api-docs:
-    enabled: false
   packages-to-scan: baemin.controller
+  swagger-ui:
+    path: /swagger.html
