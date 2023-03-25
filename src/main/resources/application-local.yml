@@ -5,6 +5,19 @@ spring:
   config:
     activate:
       on-profile: local
+  logging:
+    pattern:
+      file: "%-4relative [%thread] %-5level %logger{35} - %msg%n"
+    logback:
+      rollingpolicy:
+        file-name-pattern: "${LOG_FILE}.%d{yyyy-MM-dd}_%i.text"
+    file:
+      path: D:\log
+      max-history: 7
+      max-size: 5KB
+      total-size-cap: 1MB
+    level:
+      root: Info
 
 # Disabling the /v3/api-docs endpoint
 springdoc:
