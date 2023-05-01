@@ -2,6 +2,7 @@ package baemin.config;
 
 import com.zaxxer.hikari.HikariDataSource;
 import javax.sql.DataSource;
+import org.modelmapper.ModelMapper;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
@@ -27,5 +28,10 @@ public class DatabaseConfig {
     @Bean
     public DataSourceTransactionManager transactionManager() throws Exception {
         return new DataSourceTransactionManager(dataSource());
+    }
+
+    @Bean
+    public ModelMapper modelMapper() {
+        return new ModelMapper();
     }
 }
