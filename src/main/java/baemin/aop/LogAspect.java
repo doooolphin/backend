@@ -18,12 +18,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 @Slf4j
 public class LogAspect {
 
-    // baemin 이하 패키지의 모든 클래스 이하 모든 메서드에 적용
-    @Pointcut("within(baemin.controller.*)")
-    public void onRequest() {
-    }
-
-    @Around("baemin.aop.LogAspect.onRequest()")
+    @Around("execution(* baemin.controller..*(..))")
     public Object requestLogging(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         HttpServletRequest request = ((ServletRequestAttributes)RequestContextHolder.currentRequestAttributes()).getRequest();
 
