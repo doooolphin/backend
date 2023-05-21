@@ -5,7 +5,9 @@ import baemin.exception.MemberException;
 import baemin.service.MemberService;
 import baemin.dto.MemberDto;
 import jakarta.validation.Valid;
+import java.io.UnsupportedEncodingException;
 import java.util.Date;
+import javax.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -23,14 +25,18 @@ public class MemberController {
 
     @ExceptionHandler
     private ResponseEntity<ErrorResult> handelMemberException(MemberException e) {
-
         ErrorResult errorResult = ErrorResult.builder()
             .code(e.getCode().value())
             .message(e.getMessage())
             .timeStamp(new Date())
             .build();
-
         return new ResponseEntity<>(errorResult, e.getCode());
+    }
+
+    @PostMapping("/email-confirm")
+    public ResponseEntity emailConfirm(@RequestBody String email) throws UnsupportedEncodingException, MessagingException {
+        String authKey = memberService.emailConfirm(email);
+        return ResponseEntity.ok(authKey);
     }
 
     @PostMapping("/sign-up")
