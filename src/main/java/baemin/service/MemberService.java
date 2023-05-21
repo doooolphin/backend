@@ -1,7 +1,10 @@
 package baemin.service;
 
+import baemin.dto.MemberAuthDto;
 import baemin.entity.Member;
+import baemin.entity.MemberAuth;
 import baemin.exception.MemberException;
+import baemin.repository.MemberAuthRepository;
 import baemin.repository.MemberRepository;
 import baemin.dto.MemberDto;
 import jakarta.transaction.Transactional;
@@ -24,61 +27,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class MemberService {
     private final MemberRepository memberRepository;
+    private final MemberAuthRepository memberAuthRepository;
     private final ModelMapper modelMapper;
     private final JavaMailSender mailSender;
-
-    // 이메일 내용
-    public MimeMessage createMessage(String to, String authKey) throws MessagingException, UnsupportedEncodingException {
-
-        log.info("보낼 사용자 : "+to);
-
-        //msg 내용
-        String msg = "";
-        msg += "<h2>안녕하세요.</h2>";
-        msg += "<h2>Dooophin 입니다.</h2>";
-        msg += "<br>";
-        msg += "<p>아래 인증코드를 페이지에 입력해주세요.</p>";
-        msg += "<br>";
-        msg += "<br>";
-        msg += "<div align='center' style='border:1px solid black'>";
-        msg += "<h3 style='color:BlueViolet'>인증코드 입니다.</h3>";
-        msg += "<div style='font-size:130%'>";
-        msg += "<strong>" + authKey + "</strong></div><br/>" ;
-
-        MimeMessage message = mailSender.createMimeMessage();
-        message.addRecipient(Message.RecipientType.TO, new InternetAddress(to));  //메일 받을 사용자
-        message.setFrom(new InternetAddress("ohi2262@naver.com", "Dooolphin_Admin"));
-        message.setSubject("[Dooolphin] 이메일 인증을 위한 인증코드 입니다.");
-        message.setText(msg, "utf-8", "html");
-
-        return message;
-    }
-
-    // 랜덤 인증코드 생성
-    public String createAuthKey() {
-        int leftLimit = 48; // num '0'
-        int rightLimit = 122; // letter 'z'
-        int targetLength = 10;
-        Random random = new Random();
-        String authKey = random.ints(leftLimit, rightLimit + 1)
-                                .filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97)) // 아스키코드 범위 지정
-                                .limit(targetLength)
-                                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append) // StringBuiler 객체 생성
-                                .toString();
-
-        log.info("생성된 랜덤 인증코드 : "+authKey);
-        return authKey;
-    }
-
-    // 이메일 발송
-    public String emailConfirm(String to) throws UnsupportedEncodingException, MessagingException {
-        String authKey = createAuthKey(); // 인증코드 생성
-        MimeMessage message = createMessage(to, authKey); // 메일 발송
-
-        mailSender.send(message);
-
-        return authKey;
-    }
 
     // 회원가입
     public String join(MemberDto memberDto) {
@@ -113,5 +64,68 @@ public class MemberService {
         return memberDto;
     }
 
+    // 이메일 발송
+    public void sendEmail(String to) throws UnsupportedEncodingException, MessagingException {
+        String authKey = createAuthKey(); // 인증코드 생성
+
+        MemberAuth memberAuth = new MemberAuth();
+        memberAuth.setEmail(to);
+        memberAuth.setAuthKey(authKey);
+
+        memberAuthRepository.save(memberAuth);
+        MimeMessage message = createMessage(to, authKey); // 메일 발송
+
+        mailSender.send(message);
+    }
+
+    // 랜덤 인증코드 생성
+    public String createAuthKey() {
+        int leftLimit = 48; // num '0'
+        int rightLimit = 122; // letter 'z'
+        int targetLength = 10;
+        Random random = new Random();
+        String authKey = random.ints(leftLimit, rightLimit + 1)
+            .filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97)) // 아스키코드 범위 지정
+            .limit(targetLength)
+            .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append) // StringBuiler 객체 생성
+            .toString();
+
+        log.info("생성된 랜덤 인증코드 : "+authKey);
+        return authKey;
+    }
+
+    // 이메일 내용
+    public MimeMessage createMessage(String to, String authKey) throws MessagingException, UnsupportedEncodingException {
+
+        log.info("보낼 사용자 : "+to);
+
+        StringBuilder sb = new StringBuilder("<h2>안녕하세요.</h2>");
+        sb.append("<h2>Dooophin 입니다.</h2>");
+        sb.append("<br>");
+        sb.append("<p>아래 인증코드를 페이지에 입력해주세요.</p>");
+        sb.append("<br>");
+        sb.append("<br>");
+        sb.append("<div align='center' style='border:1px solid black'>");
+        sb.append("<h3 style='color:BlueViolet'>인증코드 입니다.</h3>");
+        sb.append("<div style='font-size:130%'>");
+        sb.append("<strong>");
+        sb.append(authKey);
+        sb.append("</strong></div><br/>");
+
+        MimeMessage message = mailSender.createMimeMessage();
+        message.addRecipient(Message.RecipientType.TO, new InternetAddress(to));  //메일 받을 사용자
+        message.setFrom(new InternetAddress("ohi2262@naver.com", "Dooolphin_Admin"));
+        message.setSubject("[Dooolphin] 이메일 인증을 위한 인증코드 입니다.");
+        message.setText(String.valueOf(sb), "utf-8", "html");
+
+        return message;
+    }
+
+    // 인증번호 확인
+    public Boolean emailConfirm(MemberAuthDto memberAuthDto) {
+        MemberAuth memberAuth = modelMapper.map(memberAuthDto, MemberAuth.class);
+        String confirmAuthKey = memberAuthRepository.findByEmail(memberAuth.getEmail()).orElseThrow().getAuthKey();
+        return confirmAuthKey.equals(memberAuthDto.getAuthKey());
+    }
 
 }
