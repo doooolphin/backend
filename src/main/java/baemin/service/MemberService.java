@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -30,9 +31,11 @@ public class MemberService {
     private final MemberAuthRepository memberAuthRepository;
     private final ModelMapper modelMapper;
     private final JavaMailSender mailSender;
+    private final PasswordEncoder passwordEncoder;
 
     // 회원가입
     public String join(MemberDto memberDto) {
+        memberDto.setPassword(passwordEncoder.encode(memberDto.getPassword())); // 비밀번호 암호화
         Member member = modelMapper.map(memberDto, Member.class);
 
         validateDuplicateMember(member.getId());//중복 회원 검증
